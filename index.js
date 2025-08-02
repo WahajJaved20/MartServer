@@ -1,9 +1,13 @@
-require("dotenv").config();
-const cors = require("cors")
-const express = require("express");
+import dotenv from 'dotenv';
+import cors from 'cors'
+import express from 'express'
+import bodyParser from 'body-parser';
+import authRouter from './Controllers/authController.js'
+import { verifySupabaseToken } from './Middleware/verifySupabaseToken.js'
+
+dotenv.config(); 
+const port = process.env.PORT;
 const app = express();
-const bodyParser = require("body-parser");
-const port = process.env.PORT || 3000;
 
 app.use(bodyParser.json());
 
@@ -16,6 +20,8 @@ app.use((req, res, next) => {
     next();
 });
 
+app.use("/", authRouter);
+
 app.get("/", (req, res) => {
     res.send("Server is Live!");
 });
@@ -23,6 +29,13 @@ app.get("/", (req, res) => {
 app.get("/testEnvironmentVariables", (req, res) => {
     res.send(`ENV Var 'testVar' => ${process.env.testVar}`);
 });
+
+app.get("/testJWTAuthentication", verifySupabaseToken, (req, res) => {
+    res.json({
+    message: 'Hello, authenticated user!',
+    user: req.user,
+  });
+})
 
 app.listen(port, () => {
     console.log(`Server is listening on port ${port}`);
